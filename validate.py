@@ -8,7 +8,7 @@ import numpy as np
 import librosa.display
 import tensorflow.compat.v1 as tf
 import time
-import SylNet_model_tf2
+import model
 import math
 import os
 tf.disable_v2_behavior()
@@ -79,7 +79,7 @@ noBatches = math.floor(X.shape[0]/batchSize)
 ids = tf.placeholder(shape=(None, 2), dtype=tf.int32)
 ids_len = tf.placeholder(shape=(None), dtype=tf.int32)
 is_train = tf.placeholder(dtype=tf.bool)
-S = SylNet_model_tf2.CNET(name='S', 
+S = model.CNET(name='S', 
                    input_channels=input_channels,
                    output_channels=output_channels,
                    residual_channels=residual_channels,

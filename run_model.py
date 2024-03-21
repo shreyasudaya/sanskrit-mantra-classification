@@ -9,12 +9,13 @@ import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 import time
 import model
+
+from scipy.io import wavfile
 import math
 import os
 import sys
 import glob
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-
 
 ########### PATHS IN USED IN CODE ###########
 mainFile = os.path.dirname(os.path.realpath(__file__))
@@ -59,6 +60,44 @@ elif(len(sys.argv) == 4):
         raise Exception('Model path must be a string (file path)')
 
 
+def compute_cumulative_sum(pred):
+  
+  return np.cumsum(pred)
+
+# Assuming PRED is the provided matrix
+
+def classify_number(number):
+    
+    if 20<number<30:
+        return 'Gayatri'
+    elif 30<=number <32:
+        return 'Ushnih'
+    elif 32<number< 40:
+        return 'Anushtup'
+    elif number==40:
+        return 'Brihati'
+    elif number == 48:
+        return 'Jagati'
+    else:
+        return 'Trishtubh'
+
+def read_and_classify(filename='results.txt'):
+    try:
+        with open(filename, 'r') as file:
+            first_line = file.readline().strip()  # Read the first line and remove any leading/trailing whitespace
+            number = float(first_line)  # Convert to float (or int if preferred)
+            classification = classify_number(number)
+            print(f'The chanda is {classification}.')
+            str=f'The chanda is {classification}.'
+            with open("results.txt", "w") as outfile:
+                outfile.write(str)
+                
+    except FileNotFoundError:
+        print(f'Error: The file {filename} was not found.')
+    except ValueError:
+        print(f'Error: The first line of the file {filename} does not contain a valid number.')
+    except Exception as e:
+        print(f'An unexpected error occurred: {e}')
 
 
 ########### GET DATA #############
@@ -179,10 +218,37 @@ with tf.Session(config=tfconfig) as sess:
 
 # CONVERT OUTPUTS TO DESIRED INT FORMAT AND SAVE TXT FILE
 Y = np.zeros(no_utt)
+
+
+
+# Load the wav file
+sample_rate, audio_data = wavfile.read("mantras/anushtup-shri.wav")
+
+
+
 for n_val in range(no_utt):
     Y[n_val] = sum(sum(np.asarray(PRED[n_val][0]>=0.5, dtype=np.float32)))
+    sum(np.asarray(PRED[n_val][0]>=0.5, dtype=np.float32))
 print(res_path)
 np.savetxt(res_path,Y,fmt='%i',delimiter='\n')
 if(wasdir):
     newfile = res_path[0:-4] + '_files.txt'
     np.savetxt(newfile,fileList,fmt='%s',delimiter='\n')
+read_and_classify('results.txt')
+
+
+'''
+# Create a heatmap of the data
+plt.imshow(PRED, cmap='coolwarm')
+
+# Add colorbar
+plt.colorbar()
+
+# Add labels and title
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+plt.title('Heatmap of Prediction Values')
+
+# Show the plot
+plt.show()
+'''
